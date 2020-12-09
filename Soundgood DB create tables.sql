@@ -131,7 +131,7 @@ CREATE TABLE "instruments_learning" (
 
 CREATE TABLE "lesson_pricing" (
     "pricing_id" serial NOT NULL,
-    "day_of_week" VARCHAR(9) NOT NULL,
+    "day_of_week" VARCHAR(9) UNIQUE NOT NULL,
     "lesson_level" CHAR(10) NOT NULL,
     "lesson_type" VARCHAR(12) NOT NULL,
     "price" INT NOT NULL,
