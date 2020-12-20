@@ -3,8 +3,8 @@ DROP TABLE IF EXISTS "person" CASCADE;
 DROP TABLE IF EXISTS "soundgood_facility" CASCADE;
 DROP TABLE IF EXISTS "administrator" CASCADE;
 DROP TABLE IF EXISTS "instrument_for_rent" CASCADE;
-DROP TABLE IF EXISTS "instrument_rented" CASCADE;
-DROP TABLE IF EXISTS "instruments_learning" CASCADE;
+DROP TABLE IF EXISTS "rented_instrument" CASCADE;
+DROP TABLE IF EXISTS "instrument_learning" CASCADE;
 DROP TABLE IF EXISTS "lesson_pricing" CASCADE;
 DROP TABLE IF EXISTS "opening_hours" CASCADE;
 DROP TABLE IF EXISTS "student" CASCADE;
@@ -21,14 +21,6 @@ DROP TABLE IF EXISTS "sibling_to" CASCADE;
 DROP TABLE IF EXISTS "student_application" CASCADE;
 DROP TABLE IF EXISTS "individual_lesson" CASCADE;
 DROP TABLE IF EXISTS "advanced_audition" CASCADE;
-
-
-CREATE TABLE "parent" (
-    "parent_id" serial NOT NULL,
-    "email" VARCHAR(50) UNIQUE,
-    "phone_number" VARCHAR(15) UNIQUE,
-    PRIMARY KEY ("parent_id")
-);
 
 CREATE TABLE "person" (
     "person_id" serial NOT NULL,
@@ -60,6 +52,13 @@ CREATE TABLE "student" (
     PRIMARY KEY ("student_id")
 );
 
+CREATE TABLE "parent" (
+    "parent_id" serial NOT NULL,
+    "email" VARCHAR(50) UNIQUE,
+    "phone_number" VARCHAR(15) UNIQUE,
+    "student_id" INT NOT NULL REFERENCES "student" ON DELETE CASCADE,
+    PRIMARY KEY ("parent_id")
+);
 
 CREATE TABLE "student_invoice" (
     "invoice_id" serial NOT NULL,
@@ -69,12 +68,6 @@ CREATE TABLE "student_invoice" (
 	"month" VARCHAR(9),
     "student_id" INT REFERENCES "student" ON DELETE CASCADE,
     PRIMARY KEY ("invoice_id")
-);
-
-CREATE TABLE "student_parent" (
-    "student_id" INT NOT NULL REFERENCES "student" ON DELETE CASCADE,
-    "parent_id" INT NOT NULL REFERENCES "parent" ON DELETE CASCADE,
-    PRIMARY KEY ("student_id", "parent_id")
 );
 
 CREATE TABLE "administrator" (
@@ -103,17 +96,19 @@ CREATE TABLE "instructor_paycheck" (
 
 CREATE TABLE "instrument_for_rent" (
     "rental_id" serial NOT NULL,
-    "instrumentType" VARCHAR(20),
-    "instrumentBrand" VARCHAR(20),
-    "instrumentMonthlyRent" INT,
-    "student_id" INT NOT NULL REFERENCES "student" ON DELETE CASCADE,
+    "instrument_type" VARCHAR(20),
+    "instrument_brand" VARCHAR(20),
+    "instrument_monthly_rent" INT,
+    "rented" boolean NOT NULL,
     PRIMARY KEY ("rental_id")
 );
 
-CREATE TABLE "instrument_rented" (
-    "instrument" VARCHAR(30) NOT NULL,
-    "student_id" INT NOT NULL REFERENCES "student" ON DELETE CASCADE,
-    PRIMARY KEY ("instrument", "student_id")
+CREATE TABLE "rented_instrument" (
+    "rental_start_date" DATE NOT NULL,
+    "rental_end_date" DATE NOT NULL,
+    "student_id" INT REFERENCES "student",
+    "rental_id" INT NOT NULL REFERENCES "instrument_for_rent",
+    PRIMARY KEY ("rental_id", "rental_start_date")
 );
 
 CREATE TABLE "instrument_skill" (
@@ -122,8 +117,8 @@ CREATE TABLE "instrument_skill" (
     PRIMARY KEY ("instr_id", "instrument")
 );
 
-CREATE TABLE "instruments_learning" (
-    "instrument_skill" CHAR(10),
+CREATE TABLE "instrument_learning" (
+    "instrument_skill" CHAR(12),
     "instrument" VARCHAR(20),
     "student_id" INT NOT NULL REFERENCES "student" ON DELETE CASCADE,
     PRIMARY KEY ("instrument", "student_id")
@@ -131,11 +126,12 @@ CREATE TABLE "instruments_learning" (
 
 CREATE TABLE "lesson_pricing" (
     "pricing_id" serial NOT NULL,
-    "day_of_week" VARCHAR(9) UNIQUE NOT NULL,
-    "lesson_level" CHAR(10) NOT NULL,
+    "day_of_week" VARCHAR(9) NOT NULL,
+    "lesson_level" CHAR(12),
     "lesson_type" VARCHAR(12) NOT NULL,
     "price" INT NOT NULL,
     "admin_id" INT REFERENCES "administrator",
+    UNIQUE("day_of_week", "lesson_level", "lesson_type"),
     PRIMARY KEY ("pricing_id")
 );
 
@@ -149,15 +145,17 @@ CREATE TABLE "opening_hours" (
 
 CREATE TABLE "scheduled_lesson" (
     "lesson_id" serial NOT NULL,
-    "room" VARCHAR(20),
-    "time" TIME(5),
-    "date" DATE,
+    "room" VARCHAR(20) NOT NULL,
+    "start_time" TIME(5) NOT NULL,
+    "date" DATE NOT NULL,
     "lesson_type" VARCHAR(12),
     "min_participants" INT,
     "max_participants" INT,
-    "pricing_id" INT,
+    "duration" INT,
+    "pricing_id" INT REFERENCES "lesson_pricing",
     "instr_id" INT NOT NULL REFERENCES "instructor" ON DELETE CASCADE,
     "admin_id" INT REFERENCES "administrator",
+    UNIQUE("room", "start_time", "date"),
     PRIMARY KEY ("lesson_id")
 );
 
@@ -178,35 +176,30 @@ CREATE TABLE "student_application" (
 
 CREATE TABLE "student_scheduled_lesson" (
     "lesson_id" INT NOT NULL REFERENCES "scheduled_lesson" ON DELETE CASCADE,
-	"room" INT REFERENCES "scheduled_lesson",
-	"date" INT REFERENCES "scheduled_lesson",
-	"time" INT REFERENCES "scheduled_lesson",
     "student_id" INT NOT NULL REFERENCES "student" ON DELETE CASCADE,
     PRIMARY KEY ("lesson_id", "student_id")
 );
 
 CREATE TABLE "advanced_audition" (
     "aa_id" serial NOT NULL,
-    "time" TIME(5),
-    "date" DATE,
-    "room" VARCHAR(20),
+    "start_time" TIME(5) NOT NULL,
+    "date" DATE NOT NULL,
+    "room" VARCHAR(20) NOT NULL,
     "instrument" VARCHAR(20),
     "audition_result" VARCHAR(500),
+    "duration" INT,
     "instr_id" INT NOT NULL REFERENCES "instructor" ON DELETE CASCADE,
     "sa_id" INT NOT NULL REFERENCES "student_application" ON DELETE CASCADE,
     "student_id" INT NOT NULL REFERENCES "student" ON DELETE CASCADE,
+    UNIQUE("room", "start_time", "date"),
 	UNIQUE("sa_id", "student_id"),
-    PRIMARY KEY ("aa_id", "time", "date")
+    PRIMARY KEY ("aa_id")
 );
-
 
 CREATE TABLE "ensemble" (
     "ens_id" serial NOT NULL,
     "genre" VARCHAR(20),
     "lesson_id" INT NOT NULL REFERENCES "scheduled_lesson" ON DELETE CASCADE,
-	"room" INT REFERENCES "scheduled_lesson",
-	"date" INT REFERENCES "scheduled_lesson",
-	"time" INT REFERENCES "scheduled_lesson",
     PRIMARY KEY ("ens_id")
 );
 
@@ -215,22 +208,21 @@ CREATE TABLE "group_lesson" (
     "instrument" VARCHAR(30),
     "lesson_level" VARCHAR(12),
     "lesson_id" INT NOT NULL REFERENCES "scheduled_lesson" ON DELETE CASCADE,
-	"room" INT REFERENCES "scheduled_lesson",
-	"date" INT REFERENCES "scheduled_lesson",
-	"time" INT REFERENCES "scheduled_lesson",
     PRIMARY KEY ("grl_id")
 );
 
 CREATE TABLE "individual_lesson" (
-    "il_id" INT NOT NULL,
+    "il_id" serial NOT NULL,
     "individual_level" VARCHAR(12),
     "instrument_type" VARCHAR(20),
-    "room" VARCHAR(20),
-    "time" TIME(5),
-    "date" DATE,
+    "room" VARCHAR(20) NOT NULL,
+    "start_time" TIME(5) NOT NULL,
+    "date" DATE NOT NULL,
+    "duration" INT,
     "pricing_id" INT REFERENCES "lesson_pricing",
     "instr_id" INT NOT NULL REFERENCES "instructor" ON DELETE CASCADE,
     "admin_id" INT REFERENCES "administrator",
     "student_id" INT NOT NULL REFERENCES "student" ON DELETE CASCADE,
-    PRIMARY KEY ("il_id", "room", "time", "date")
+    UNIQUE("room", "start_time", "date"),
+    PRIMARY KEY ("il_id")
 );
