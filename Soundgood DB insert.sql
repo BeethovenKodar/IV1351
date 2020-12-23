@@ -136,6 +136,10 @@ INSERT INTO "rented_instrument" ("rental_start_date", "rental_end_date",
 VALUES ('2017-07-06', '2017-08-06', '2');
 --
 INSERT INTO "rented_instrument" ("rental_start_date", "rental_end_date", 
+    "rental_id")
+VALUES ('2017-07-07', '2017-10-07', '2');
+--
+INSERT INTO "rented_instrument" ("rental_start_date", "rental_end_date", 
     "student_id", "rental_id")
 VALUES ('2020-05-21', '2021-05-21', '3', '3');
 --
@@ -244,7 +248,7 @@ VALUES ('201', '10:00', '2021-01-05', 'group lesson', '1', '5', '1', '1', '1'); 
 INSERT INTO "scheduled_lesson" ("room", "start_time", "date", "lesson_type",
     "min_participants", "max_participants", "pricing_id", "instr_id",
     "admin_id")
-VALUES ('202', '10:00', '2021-01-05', 'ensemble', '1', '5', '2', '2', '1');
+VALUES ('202', '10:00', '2020-12-28', 'ensemble', '1', '5', '2', '2', '1');
 --
 INSERT INTO "scheduled_lesson" ("room", "start_time", "date", "lesson_type",
     "min_participants", "max_participants", "pricing_id", "instr_id",
@@ -260,6 +264,31 @@ INSERT INTO "scheduled_lesson" ("room", "start_time", "date", "lesson_type",
     "min_participants", "max_participants", "pricing_id", "instr_id",
     "admin_id")
 VALUES ('204', '11:00', '2021-01-12', 'ensemble', '1', '5', '2', '2', '1');
+--
+INSERT INTO "scheduled_lesson" ("room", "start_time", "date", "lesson_type",
+    "min_participants", "max_participants", "pricing_id", "instr_id",
+    "admin_id")
+VALUES ('201', '10:00', '2021-01-12', 'group lesson', '1', '5', '1', '1', '1');   --beginner guitar
+--
+INSERT INTO "scheduled_lesson" ("room", "start_time", "date", "lesson_type",
+    "min_participants", "max_participants", "pricing_id", "instr_id",
+    "admin_id")
+VALUES ('201', '15:00', '2021-01-17', 'group lesson', '1', '5', '3', '1', '1');   --advanced piano
+--
+INSERT INTO "scheduled_lesson" ("room", "start_time", "date", "lesson_type",
+    "min_participants", "max_participants", "pricing_id", "instr_id",
+    "admin_id")
+VALUES ('203', '14:00', '2021-01-17', 'group lesson', '1', '5', '4', '3', '1');   --intermediate saxophone
+--
+INSERT INTO "scheduled_lesson" ("room", "start_time", "date", "lesson_type",
+    "min_participants", "max_participants", "pricing_id", "instr_id",
+    "admin_id")
+VALUES ('202', '10:00', '2020-12-29', 'ensemble', '1', '5', '2', '1', '1');
+--
+INSERT INTO "scheduled_lesson" ("room", "start_time", "date", "lesson_type",
+    "min_participants", "max_participants", "pricing_id", "instr_id",
+    "admin_id")
+VALUES ('202', '10:00', '2020-12-30', 'ensemble', '1', '5', '2', '2', '1');
 --
 
 --sibling_to
@@ -331,6 +360,12 @@ VALUES ('rock', '2');
 INSERT INTO "ensemble" ("genre", "lesson_id")
 VALUES ('pop', '5');
 --
+INSERT INTO "ensemble" ("genre", "lesson_id")
+VALUES ('rock', '9');
+--
+INSERT INTO "ensemble" ("genre", "lesson_id")
+VALUES ('pop', '10');
+--
 
 --group_lesson
 INSERT INTO "group_lesson" ("instrument", "lesson_level", "lesson_id")
@@ -342,28 +377,33 @@ VALUES ('piano', 'advanced', '3');
 INSERT INTO "group_lesson" ("instrument", "lesson_level", "lesson_id")
 VALUES ('saxophone', 'intermediate', '4');
 --
+INSERT INTO "group_lesson" ("instrument", "lesson_level", "lesson_id")
+VALUES ('guitar', 'beginner', '6');
+--
+INSERT INTO "group_lesson" ("instrument", "lesson_level", "lesson_id")
+VALUES ('piano', 'advanced', '7');
+--
+INSERT INTO "group_lesson" ("instrument", "lesson_level", "lesson_id")
+VALUES ('saxophone', 'intermediate', '8');
+--
 
 --individual_lesson
 INSERT INTO "individual_lesson" ("individual_level", "instrument_type", 
     "room", "start_time", "date", "pricing_id", "instr_id", "admin_id", "student_id")
-VALUES ('intermediate', 'saxophone', '202', '11:00', '2020-12-16', '5', '3', '2', '4');
+VALUES ('intermediate', 'saxophone', '202', '11:00', '2021-01-13', '5', '3', '2', '4');
 --
 INSERT INTO "individual_lesson" ("individual_level", "instrument_type", 
     "room", "start_time", "date", "pricing_id", "instr_id", "admin_id", "student_id")
-VALUES ('advanced', 'piano', '202', '14:00', '2020-12-16', '6', '1', '2', '1');
+VALUES ('advanced', 'piano', '202', '14:00', '2021-01-13', '6', '1', '2', '1');
 --
-
-
-
-
-
-
-
-
-
-
-
-
+INSERT INTO "individual_lesson" ("individual_level", "instrument_type", 
+    "room", "start_time", "date", "pricing_id", "instr_id", "admin_id", "student_id")
+VALUES ('advanced', 'piano', '202', '14:00', '2021-01-20', '6', '1', '2', '1');
+--
+INSERT INTO "individual_lesson" ("individual_level", "instrument_type", 
+    "room", "start_time", "date", "pricing_id", "instr_id", "admin_id", "student_id")
+VALUES ('advanced', 'drums', '202', '14:00', '2021-01-27', '6', '2', '2', '3');
+--
 
 --student_invoice (one per student) TA BORT?
 INSERT INTO "student_invoice" ("sibling_discount", "number_of_lessons", 
