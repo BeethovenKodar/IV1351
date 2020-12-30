@@ -95,20 +95,21 @@ CREATE TABLE "instructor_paycheck" (
 );
 
 CREATE TABLE "instrument_for_rent" (
-    "rental_id" serial NOT NULL,
+    "instrument_id" serial NOT NULL,
     "instrument_type" VARCHAR(20),
     "instrument_brand" VARCHAR(20),
     "instrument_monthly_rent" INT,
     "rented" boolean NOT NULL,
-    PRIMARY KEY ("rental_id")
+    PRIMARY KEY ("instrument_id")
 );
 
 CREATE TABLE "rented_instrument" (
+    "rental_id" serial NOT NULL,
     "rental_start_date" DATE NOT NULL,
-    "rental_end_date" DATE NOT NULL,
-    "student_id" INT REFERENCES "student",
-    "rental_id" INT NOT NULL REFERENCES "instrument_for_rent",
-    PRIMARY KEY ("rental_id", "rental_start_date")
+    "rental_end_date" DATE,
+    "student_id" INT REFERENCES "student" ON DELETE SET NULL,
+    "instrument_id" INT NOT NULL REFERENCES "instrument_for_rent",
+    PRIMARY KEY ("rental_id")
 );
 
 CREATE TABLE "instrument_skill" (
@@ -118,7 +119,7 @@ CREATE TABLE "instrument_skill" (
 );
 
 CREATE TABLE "instrument_learning" (
-    "instrument_skill" CHAR(12),
+    "instrument_skill" VARCHAR(12),
     "instrument" VARCHAR(20),
     "student_id" INT NOT NULL REFERENCES "student" ON DELETE CASCADE,
     PRIMARY KEY ("instrument", "student_id")

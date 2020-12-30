@@ -42,6 +42,9 @@ INSERT INTO "person" ("first_name", "sur_name", "person_number", "age", "email",
     "phone_number", "street", "zip_code", "city")
 VALUES ('Carin', 'Wahlqvist', '9107134265', '29', 'carin.wahlqvist@gmail.com', 
     '0528960298', 'Jälavägen', '46237', 'Vänersborg');
+
+INSERT INTO "student" ("person_id")
+VALUES('5');
 -- ^ not accepted yet
 
 --parent
@@ -89,7 +92,7 @@ VALUES ('4', '1', '8');
 --
 INSERT INTO "person" ("first_name", "sur_name", "person_number", "age", "email", 
     "phone_number", "street", "zip_code", "city")
-VALUES ('Viviann', 'Törnqvist', '560607', '64', 'vivianne.tornqvist@gmail.com', 
+VALUES ('Viviann', 'Törnqvist', '5606073304', '64', 'vivianne.tornqvist@gmail.com', 
     '0189517887', 'Kronhjulsstigen', '75446', 'Uppsala');
 
 INSERT INTO "instructor" ("staff_id", "facility_id", "person_id")
@@ -124,27 +127,27 @@ VALUES ('drums', 'Sennheiser', '50', 'false');
 
 --rented_instrument
 INSERT INTO "rented_instrument" ("rental_start_date", "rental_end_date", 
-    "rental_id")
+    "instrument_id")
 VALUES ('2017-01-20', '2018-01-20', '1');
 --
 INSERT INTO "rented_instrument" ("rental_start_date", "rental_end_date", 
-    "rental_id")
+    "instrument_id")
 VALUES ('2017-04-06', '2017-06-06', '2');
 --
 INSERT INTO "rented_instrument" ("rental_start_date", "rental_end_date", 
-    "rental_id")
+    "instrument_id")
 VALUES ('2017-07-06', '2017-08-06', '2');
 --
 INSERT INTO "rented_instrument" ("rental_start_date", "rental_end_date", 
-    "rental_id")
+    "instrument_id")
 VALUES ('2017-07-07', '2017-10-07', '2');
 --
 INSERT INTO "rented_instrument" ("rental_start_date", "rental_end_date", 
-    "student_id", "rental_id")
+    "student_id", "instrument_id")
 VALUES ('2020-05-21', '2021-05-21', '3', '3');
 --
 INSERT INTO "rented_instrument" ("rental_start_date", "rental_end_date", 
-    "student_id", "rental_id")
+    "student_id", "instrument_id")
 VALUES ('2020-08-30', '2021-04-30', '2', '5');
 --
 
@@ -181,7 +184,7 @@ VALUES ('advanced', 'drums', '3');
 --
 INSERT INTO "instrument_learning" ("instrument_skill", 
     "instrument", "student_id")
-VALUES ('intermediate', 'saxophone', '4')
+VALUES ('intermediate', 'saxophone', '4');
 --
 
 --opening_hours
@@ -408,11 +411,11 @@ VALUES ('advanced', 'drums', '202', '14:00', '2021-01-27', '6', '2', '2', '3');
 --student_invoice (one per student) TA BORT?
 INSERT INTO "student_invoice" ("sibling_discount", "number_of_lessons", 
     "total_price_rental", "month", "student_id")
-VALUES ('', '', '', '', '')
+VALUES ('', '', '', '', '');
 --
 INSERT INTO "student_invoice" ("sibling_discount", "number_of_lessons", 
     "total_price_rental", "month", "student_id")
-VALUES ('', '', '', '', '')
+VALUES ('', '', '', '', '');
 --
 INSERT INTO "student_invoice" ("sibling_discount", "number_of_lessons", 
     "total_price_rental", "month", "student_id")
