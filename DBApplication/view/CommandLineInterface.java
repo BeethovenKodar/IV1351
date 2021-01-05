@@ -63,9 +63,12 @@ public class CommandLineInterface {
                     } else if (rc.checkRentalLimit() >= 2) {
                         System.out.println(BASE + "Another rental would exceed limit of maximum 2 rentals," +
                                 " use TERMINATE [rentalID] to rent this one");
-                    } else {
+                    } else if (rc.isRentable(Integer.parseInt(userParams[0]))){
                         rc.rentInstrument(Integer.parseInt(userParams[0]));
                         System.out.println(BASE + "Instrument was successfully rented");
+                    } else {
+                        System.out.println(BASE + "You cannot rent this instrument, maybe you have not looked at " +
+                                "LIST_RENTABLE_INSTRUMENT [type]?");
                     }
                     break;
                 }
@@ -77,8 +80,12 @@ public class CommandLineInterface {
                     if (!rc.verifyUser()) {
                         System.out.println(BASE + "Must be logged in to terminate a rental, use LOG_IN [email] command");
                     } else {
-                        rc.terminateRental(Integer.parseInt(userParams[0]));
-                        System.out.println(BASE + "Termination of rental successful");
+                        if(rc.terminateRental(Integer.parseInt(userParams[0]))) {
+                            System.out.println(BASE + "Termination of rental successful");
+                        } else {
+                            System.out.println(BASE + "You do not rent this instrument or maybe you have not " +
+                                    "checked which instrument you are renting with LIST_MY_RENTALS?");
+                        }
                     }
                     break;
                 }

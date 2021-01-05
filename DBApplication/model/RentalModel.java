@@ -19,6 +19,7 @@ public class RentalModel {
     public RentalModel() {
         this.dbh = new DBHandler();
         rentableInstrumentsIDs = new ArrayList<>();
+        currentRentalsByStudent = new ArrayList<>();
     }
 
     public List<String[]> listInstrumentsByType(String type) {
@@ -41,24 +42,27 @@ public class RentalModel {
     }
 
     public void rentInstrument(int instrumentID) {
-        if (rentableInstrumentsIDs.contains(instrumentID)) {
-            dbh.rentInstrument(instrumentID, studentID);
-            rentableInstrumentsIDs.remove(Integer.valueOf(instrumentID));
-        } else {
-            System.out.println("> This instrument ID is not available for rent");
-        }
+        dbh.rentInstrument(instrumentID, studentID);
+        rentableInstrumentsIDs.remove(Integer.valueOf(instrumentID));
     }
 
-    public void terminateRental(int rentalID) {
-        currentRentalsByStudent.forEach((li) -> {
-            if(String.valueOf(rentalID).equals(li[1]))
-                dbh.terminateRental(rentalID, Integer.parseInt(li[0]));
-        });
-
+    public boolean terminateRental(int rentalID) {
+        boolean success = false;
+        for (String[] rentals : currentRentalsByStudent) {
+            if (String.valueOf(rentalID).equals(rentals[1])) {
+                dbh.terminateRental(rentalID, Integer.parseInt(rentals[1]));
+                success = true;
+            }
+        }
+        return success;
     }
 
     public List<String[]> listStudentRentals() {
         currentRentalsByStudent = dbh.listStudentRentals(studentID);
         return currentRentalsByStudent;
+    }
+
+    public boolean isRentable(int instrumentID) {
+        return rentableInstrumentsIDs.contains((instrumentID));
     }
 }

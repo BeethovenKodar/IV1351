@@ -32,11 +32,15 @@ public class RentalController {
         return rm.listStudentRentals();
     }
 
-    public void terminateRental(int rentalID) {
-        rm.terminateRental(rentalID);
+    public boolean terminateRental(int rentalID) {
+        return rm.terminateRental(rentalID);
     }
 
     public void logIn(String email) {
         rm.logIn(email);
+    }
+
+    public boolean isRentable(int instrumentID) {
+        return rm.isRentable(instrumentID);
     }
 }
