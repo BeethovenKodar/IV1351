@@ -140,28 +140,6 @@ public class DBHandler {
         return studentID;
     }
 
-    public int checkRentalLimit(int studentID) {
-        int numberOfRentals = 0;
-        ResultSet rs = null;
-        boolean isEmpty = false;
-        try {
-            checkRentedInstrumentsStmt.setInt(1, studentID);
-            rs = checkRentedInstrumentsStmt.executeQuery();
-            isEmpty = !rs.isBeforeFirst();
-            if (!isEmpty) {
-                rs.next();
-                numberOfRentals = Integer.parseInt(rs.getString("rented_instruments"));
-            }
-            getInstance().commit();
-        } catch (SQLException e) {
-            handleException(e, "Could not access DB");
-        } finally {
-            if (!isEmpty)
-                closeResultSet(rs);
-        }
-        return numberOfRentals;
-    }
-
     /**
      * One method for updating the instrument_for_rent table, boolean x decides operation.
      */

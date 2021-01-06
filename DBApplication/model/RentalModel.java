@@ -10,8 +10,7 @@ import java.util.List;
  */
 public class RentalModel {
 
-    DBHandler dbh;
-    //private boolean loggedIn = false;
+    private final DBHandler dbh;
     private int studentID = -1;
     private List<Integer> rentableInstrumentsIDs;
     private List<String[]> currentRentalsByStudent;
@@ -23,46 +22,65 @@ public class RentalModel {
     }
 
     public List<String[]> listInstrumentsByType(String type) {
-        List<String[]> rentableInstruments = dbh.listInstrumentsByType(type);
         rentableInstrumentsIDs = new ArrayList<>();
-        rentableInstruments.forEach((instr) -> rentableInstrumentsIDs.add(Integer.parseInt(instr[0])));
+        List<String[]> rentableInstruments = dbh.listInstrumentsByType(type);
+        rentableInstruments.forEach((instrument) -> rentableInstrumentsIDs.add(Integer.parseInt(instrument[0])));
         return rentableInstruments;
     }
 
-    public void logIn(String email) {
-        studentID = dbh.logIn(email);
+    public void logIn(String email) throws SoundgoodException {
+        if ((studentID = dbh.logIn(email)) == -1)
+            throw new SoundgoodException("No student connected to the given email " + email);
+        currentRentalsByStudent = dbh.listStudentRentals(studentID);
     }
 
-    public boolean verifyUser() {
-        return studentID != -1;
-    }
-
-    public int checkRentalLimit() {
-        return dbh.checkRentalLimit(studentID);
-    }
-
-    public void rentInstrument(int instrumentID) {
+    public void rentInstrument(int instrumentID) throws SoundgoodException {
+        verifyUser();
+        checkRentalLimit();
+        isRentable(instrumentID);
         dbh.rentInstrument(instrumentID, studentID);
         rentableInstrumentsIDs.remove(Integer.valueOf(instrumentID));
+        currentRentalsByStudent = dbh.listStudentRentals((studentID));
     }
 
-    public boolean terminateRental(int rentalID) {
-        boolean success = false;
-        for (String[] rentals : currentRentalsByStudent) {
-            if (String.valueOf(rentalID).equals(rentals[1])) {
-                dbh.terminateRental(rentalID, Integer.parseInt(rentals[1]));
-                success = true;
-            }
-        }
-        return success;
+    public void terminateRental(int rentalID) throws SoundgoodException {
+        verifyUser();
+        int foundIndex = isTerminable(rentalID);
+        dbh.terminateRental(rentalID, Integer.parseInt(currentRentalsByStudent.get(foundIndex)[0]));
+        currentRentalsByStudent.remove(foundIndex);
     }
 
-    public List<String[]> listStudentRentals() {
-        currentRentalsByStudent = dbh.listStudentRentals(studentID);
+    public List<String[]> listStudentRentals() throws SoundgoodException {
+        verifyUser();
         return currentRentalsByStudent;
     }
 
-    public boolean isRentable(int instrumentID) {
-        return rentableInstrumentsIDs.contains((instrumentID));
+    private int isTerminable(int rentalID) throws SoundgoodException {
+        int index = -1;
+        for (int i = 0; i < currentRentalsByStudent.size(); i++) {
+            if (currentRentalsByStudent.get(index = i)[1].equals(String.valueOf(rentalID)))
+                break;
+        }
+        if (index == -1) throw new SoundgoodException("No rental with given ID connected to this student");
+        else return index;
+    }
+
+    private void verifyUser() throws SoundgoodException {
+        if (studentID == -1)
+            throw new SoundgoodException("No user is logged in");
+    }
+
+    private void checkRentalLimit() throws SoundgoodException {
+        if (currentRentalsByStudent.size() >= 2) {
+            throw new SoundgoodException("Another rental would exceed limit of maximum 2 rentals," +
+                    " use TERMINATE [rentalID] to rent this one instead");
+        }
+    }
+
+    private void isRentable(int instrumentID) throws SoundgoodException {
+        if (!rentableInstrumentsIDs.contains((instrumentID))) {
+            throw new SoundgoodException("This instrumentID is not available, have you " +
+                    "checked LIST_RENTABLE_INSTRUMENTS [type]?");
+        }
     }
 }

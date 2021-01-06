@@ -1,5 +1,6 @@
 package DBApplication.view;
 
+import DBApplication.controller.CmdFailedException;
 import DBApplication.controller.RentalController;
 
 import java.util.Arrays;
@@ -8,14 +9,12 @@ import java.util.Scanner;
 
 public class CommandLineInterface {
 
-    private RentalController rc = null;
-    private CommandLibrary cmdLib = null;
-    private Scanner console = null;
+    private final RentalController rc;
+    private final CommandLibrary cmdLib;
+    private final Scanner console;
 
     private static final String BASE = "> ";
-    private boolean activeSession = false;
-    String userParams[] = new String[0];
-    String userCmd = null;
+    private String[] userParams = new String[0];
     
     public CommandLineInterface (RentalController rc) {
         this.rc = rc;
@@ -24,113 +23,92 @@ public class CommandLineInterface {
     }
 
     public void startApp() {
-        this.activeSession = true;
+        boolean activeSession = true;
+        String userCmd;
         System.out.println("\n" + BASE + "Entered Soundgood CLI");
         while(activeSession) {
-            resetUserInput();
-            readUserInput();
-            switch(userCmd) {
-                case "ILLEGAL_CMD" : {
-                    invalidCommand();
-                    break;
-                }
-                case "--info" : {
-                    cmdLib.showHandbook();
-                    break;
-                }
-                case "LIST_RENTABLE_INSTRUMENTS" : {
-                    if (userParams.length != 1) {
-                        invalidSyntax();
+            try {
+                resetUserInput();
+                switch(userCmd = readUserInput()) {
+                    case "ILLEGAL_CMD" : {
+                        invalidCommand(userCmd);
                         break;
                     }
-                    List<String[]> results = rc.listInstrumentsByType(userParams[0]);
-                    if (results.size() == 0) {
-                        System.out.println(BASE + "No available instrument of given type");
-                    } else {
-                        System.out.println(BASE + "Instruments for rent:");
-                        System.out.println("[rentalID, type, brand, monthly price]");
-                        results.forEach((li) -> System.out.println(BASE + Arrays.toString(li)));
-                    }
-                    break;
-                }
-                case "RENT" : {
-                    if (userParams.length != 1) {
-                        invalidSyntax();
+                    case "--info" : {
+                        cmdLib.showHandbook();
                         break;
                     }
-                    if (!rc.verifyUser()) {
-                        System.out.println(BASE + "Must be logged in to rent, use LOG_IN [email] command");
-                    } else if (rc.checkRentalLimit() >= 2) {
-                        System.out.println(BASE + "Another rental would exceed limit of maximum 2 rentals," +
-                                " use TERMINATE [rentalID] to rent this one");
-                    } else if (rc.isRentable(Integer.parseInt(userParams[0]))){
-                        rc.rentInstrument(Integer.parseInt(userParams[0]));
-                        System.out.println(BASE + "Instrument was successfully rented");
-                    } else {
-                        System.out.println(BASE + "You cannot rent this instrument, maybe you have not looked at " +
-                                "LIST_RENTABLE_INSTRUMENT [type]?");
-                    }
-                    break;
-                }
-                case "TERMINATE" : {
-                    if (userParams.length != 1) {
-                        invalidSyntax();
-                        break;
-                    }
-                    if (!rc.verifyUser()) {
-                        System.out.println(BASE + "Must be logged in to terminate a rental, use LOG_IN [email] command");
-                    } else {
-                        if(rc.terminateRental(Integer.parseInt(userParams[0]))) {
-                            System.out.println(BASE + "Termination of rental successful");
-                        } else {
-                            System.out.println(BASE + "You do not rent this instrument or maybe you have not " +
-                                    "checked which instrument you are renting with LIST_MY_RENTALS?");
+                    case "LIST_RENTABLE_INSTRUMENTS" : {
+                        if (userParams.length != 1) {
+                            invalidSyntax(userCmd);
+                            break;
                         }
-                    }
-                    break;
-                }
-                case "LIST_MY_RENTALS" : {
-                    if (userParams.length != 0) {
-                        invalidSyntax();
+                        List<String[]> results = rc.listInstrumentsByType(userParams[0]);
+                        if (results.size() == 0) {
+                            System.out.println(BASE + "No available instruments of given type");
+                        } else {
+                            System.out.println(BASE + "Instruments for rent:");
+                            System.out.println("[rentalID, type, brand, monthly price]");
+                            results.forEach((li) -> System.out.println(BASE + Arrays.toString(li)));
+                        }
                         break;
                     }
-                    if (!rc.verifyUser()) {
-                        System.out.println(BASE + "Must be logged in to list your rentals, use LOG_IN [email] command");
+                    case "RENT" : {
+                        if (userParams.length != 1) {
+                            invalidSyntax(userCmd);
+                            break;
+                        }
+                        rc.rentInstrument(Integer.parseInt(userParams[0]));
+                        System.out.println(BASE + "Rental was successful");
                         break;
                     }
-                    List<String[]> rentals = rc.listStudentRentals();
-                    if (rentals.size() == 0) {
-                        System.out.println(BASE + "Not currently renting any instruments");
-                    } else {
-                        System.out.println(BASE + "Rented instruments:");
-                        System.out.println(BASE + "[rentalID, type, brand, monthly price]");
-                        rentals.forEach((li) -> {
-                            System.out.println(BASE + "[" + li[1] + " " + li[2] + " " + li[3]+ " " + li[4] + "]");
-                        });
-                    }
-                    break;
-                }
-                case "LOG_IN" : {
-                    if (userParams.length != 1) {
-                        invalidSyntax();
+                    case "TERMINATE" : {
+                        if (userParams.length != 1) {
+                            invalidSyntax(userCmd);
+                            break;
+                        }
+                        rc.terminateRental(Integer.parseInt(userParams[0]));
+                        System.out.println(BASE + "Termination was successful");
                         break;
                     }
-                    rc.logIn(userParams[0]);
-                    if (rc.verifyUser()) {
-                        System.out.println(BASE + "Successfull login! Welcome " + userParams[0]);
-                    } else {
-                        System.out.println(BASE + "Could not find user connected to " + userParams[0]);
-                    }
-                    break;
-                }
-                case "QUIT" : {
-                    if (userParams.length > 0) {
-                        invalidSyntax();
+                    case "LIST_MY_RENTALS" : {
+                        if (userParams.length != 0) {
+                            invalidSyntax(userCmd);
+                            break;
+                        }
+                        List<String[]> rentals = rc.listStudentRentals();
+                        if (rentals.size() == 0) {
+                            System.out.println(BASE + "Not currently renting any instruments");
+                        } else {
+                            System.out.println(BASE + "Rented instruments:");
+                            System.out.println(BASE + "[rentalID, type, brand, monthly price]");
+                            rentals.forEach((li) -> {
+                                System.out.println(BASE + "[" + li[1] + ", " + li[2] + ", " + li[3]+ ", " + li[4] + "]");
+                            });
+                        }
                         break;
                     }
-                    activeSession = false;
-                    break;
+                    case "LOG_IN" : {
+                        if (userParams.length != 1) {
+                            invalidSyntax(userCmd);
+                            break;
+                        }
+                        rc.logIn(userParams[0]);
+                        System.out.println(BASE + "Successful login");
+                        break;
+                    }
+                    case "QUIT" : {
+                        if (userParams.length > 0) {
+                            invalidSyntax(userCmd);
+                            break;
+                        }
+                        activeSession = false;
+                        break;
+                    }
                 }
+            } catch (CmdFailedException cfe) {
+                System.out.println(BASE + "ERROR: " + cfe.getMessage());
+                cfe.printStackTrace();
             }
         }
     }
@@ -138,25 +116,24 @@ public class CommandLineInterface {
     /**
      * Splits up the given CLI statement into a command and parameters.
      */
-    private void readUserInput() {
+    private String readUserInput() {
         System.out.print(BASE);
         String[] userInput = console.nextLine().split(" ", 2);
-        userCmd = cmdLib.getAction(userInput[0]);
         if (userInput.length > 1)
             userParams = userInput[1].split(" ", 0);
+        return cmdLib.getAction(userInput[0]);
     }
 
     private void resetUserInput() {
-        userCmd = null;
         userParams = new String[0];
     }
 
-    private void invalidCommand() {
+    private void invalidCommand(String userCmd) {
         System.out.println(BASE + "Invalid command: " + userCmd + 
             ", type --info for command listing and syntax.");           
     }
 
-    private void invalidSyntax() {
+    private void invalidSyntax(String userCmd) {
         System.out.println(BASE + "Incorrect syntax for: " + userCmd + 
             ", type --info for command listing and syntax.");
     }

@@ -1,12 +1,13 @@
 package DBApplication.controller;
 
+import DBApplication.model.SoundgoodException;
 import DBApplication.model.RentalModel;
 
 import java.util.List;
 
 public class RentalController {
 
-    private RentalModel rm;
+    private final RentalModel rm;
     
     public RentalController () {
         this.rm = new RentalModel();
@@ -16,31 +17,35 @@ public class RentalController {
         return rm.listInstrumentsByType(type);
     }
 
-    public boolean verifyUser() {
-        return rm.verifyUser();
+    public void rentInstrument(int instrumentID) throws CmdFailedException {
+        try {
+            rm.rentInstrument(instrumentID);
+        } catch (SoundgoodException se) {
+            throw new CmdFailedException("Could not rent instrument", se);
+        }
     }
 
-    public int checkRentalLimit() {
-        return rm.checkRentalLimit();
+    public List<String[]> listStudentRentals() throws CmdFailedException {
+        try {
+            return rm.listStudentRentals();
+        } catch (SoundgoodException se) {
+            throw new CmdFailedException("Could not list rentals", se);
+        }
     }
 
-    public void rentInstrument(int instrumentID) {
-        rm.rentInstrument(instrumentID);
+    public void terminateRental(int rentalID) throws CmdFailedException {
+        try {
+            rm.terminateRental(rentalID);
+        } catch (SoundgoodException se) {
+            throw new CmdFailedException("Could not terminate rental", se);
+        }
     }
 
-    public List<String[]> listStudentRentals() {
-        return rm.listStudentRentals();
-    }
-
-    public boolean terminateRental(int rentalID) {
-        return rm.terminateRental(rentalID);
-    }
-
-    public void logIn(String email) {
-        rm.logIn(email);
-    }
-
-    public boolean isRentable(int instrumentID) {
-        return rm.isRentable(instrumentID);
+    public void logIn(String email) throws CmdFailedException {
+        try {
+            rm.logIn(email);
+        } catch (SoundgoodException se) {
+            throw new CmdFailedException("Could not log in", se);
+        }
     }
 }
